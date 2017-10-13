@@ -1,19 +1,16 @@
-"""
-O que fazer a seguir:
-Tentar ver os casos de nos iguais
-Verficar se as acoes de rotacao condizem os os nomes das funcoes
-Comecar a trabalhar na interface grafica
-"""
 class Node:
     def __init__(self, chave):
+        #Inicia a arvore colocando uma raiz ou apenas coloca um no
         self.chave = chave
         self.filhos(None, None)
 
     def filhos(self, esquerda, direita):
+        #Configura os filhos de um no
         self.esquerda = esquerda
         self.direita = direita
 
     def FB(self):
+        #Usa as profundidades para calcular os fatores de balanceamento
         profE = 0
         if self.esquerda:
             profE = self.esquerda.profundidade()
@@ -23,35 +20,41 @@ class Node:
         return profD - profE
 
     def profundidade(self):
+        #Calcula a profundidade dos lados da arvore (esquerdo ou direito)
         profE = 0
         if self.esquerda:
             profE = self.esquerda.profundidade()
         profD = 0
         if self.direita:
             profD = self.direita.profundidade()
-        return 1 + max(profE, profD)
+        return 1 + max(profE, profD) #Retorna 1 + o maior das profundidades
 
     def rot_E(self):
+        #Realiza a operacao de rotacao simples a esquerda
         self.chave, self.direita.chave = self.direita.chave, self.chave
         old_esquerda = self.esquerda
         self.filhos(self.direita, self.direita.direita)
         self.esquerda.filhos(old_esquerda, self.esquerda.esquerda)
 
     def rot_D(self):
+        #Realiza a operacao de rotacao simples a direita
         self.chave, self.esquerda.chave = self.esquerda.chave, self.chave
         old_direita = self.direita
         self.filhos(self.esquerda.esquerda, self.esquerda)
         self.direita.filhos(self.direita.direita, old_direita)
 
     def rot_dup_D(self):
-        self.esquerda.rot_E()
-        self.rot_D()
+        #Realiza a operacao de rotacao dupla a direita - reaproveita as funcoes anteriores
+        self.esquerda.rot_E() #Chama uma rotacao a esquerda
+        self.rot_D() #depois uma a direita (assim como eh feito manualmente)
 
     def rot_dup_E(self):
-        self.direita.rot_D()
-        self.rot_E()
+        #Realiza a operacao de rotacao dupla a esquerda - reaproveita as funcoes anteriores
+        self.direita.rot_D() #Chama uma rotacao a direita
+        self.rot_E() #depois uma a esquerda (assim como eh feito manualmente)
 
     def executaBalanco(self):
+        #Executa o balanceamento de um no recem inserido. Usa os fatores de balanceamento, e as operacoes de rotacao
         bal = self.FB()
         if bal > 1:
             if self.direita.FB() > 0:
@@ -65,6 +68,7 @@ class Node:
                 self.rot_dup_D()
 
     def insere(self, chave):
+        #Realiza a insercao de um no com chave. Usa o __init__ e a a propria funcao recursivamente
         if chave <= self.chave:
             if not self.esquerda:
                 self.esquerda = Node(chave)
@@ -75,9 +79,10 @@ class Node:
                 self.direita = Node(chave)
             else:
                 self.direita.insere(chave)
-        self.executaBalanco()
+        self.executaBalanco() #Apos inserir executa o balanceamento da arvore
 
     def imprimeArvore(self, indent = 0, count = 0, pai = 0):
+        #Printa a arvore na ordem raiz -> filho esq - filho dir. Mostra o pai de cada no e seu respectivo fator de balanceamento
         count = count + 1
 
         if count is 1:
@@ -95,6 +100,7 @@ class Node:
 incl_raiz = False #Var. global que informa se ha uma raiz inserida, ou seja, se o __init_ da classe ja foi realizado
 
 def menu():
+    #Exibe um menu pra auxiliar o usuario
     validacao = True #true neste caso assume a invalidez da resposta
     while validacao:
         print("1. Inserir manualmente\n2. Printar arvore (identacao)\n3. Inserir a partir do arquivo\n")
