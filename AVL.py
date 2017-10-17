@@ -77,7 +77,7 @@ class Node:
                 self.esquerda = Node(chave)
             else:
                 self.esquerda.insere(chave)
-        else: #Se a chave inserida for maior ou igual que a chave atual, continua o algoritmo a direita ou insere a direita
+        elif chave > self.chave: #Se a chave inserida for maior ou igual que a chave atual, continua o algoritmo a direita ou insere a direita
             if not self.direita:
                 self.direita = Node(chave)
             else:
@@ -107,7 +107,7 @@ def menu():
     #Exibe um menu simples para auxiliar o usuario
     validacao = True #true neste caso assume a invalidez da resposta
     while validacao:
-        print("1. INPUT.txt\n2. Inserir manualmente\n3. Exibir arvore (identacao)\n")
+        print("1. INPUT.txt\n2. Inserir manualmente\n3. Exibir arvore (identacao)\n0. Sair\n")
         resp = input('Resposta: ')
         if resp<0 or resp >3:
             validacao = True
@@ -143,7 +143,11 @@ def read():
     #Le os elementos do arquivo e os coloca em um vetor de inteiros
     arquivo = open("INPUT.TXT","r") #abre arquivo com nos
     nodes = arquivo.read().split(';') #vetor nodes recebe os elementos no formato string
-    nodes.pop() #removendo o ultimo elemento que e um elemento vazio (do editor de texto)
+    if nodes[-1] is "": #Se for usado ";" o split vai ler um elemento vazio. Entao chama a funcao abaixo para remover esse elemento vazio
+        nodes.pop() #removendo o ultimo elemento que e um elemento vazio (do editor de texto)
+    else: #Caso foi usado "." no fim, ele transforma a "chave." (chave com ponto) em um float(por causa do ponto) e depois em int, para ser transformado em chaves para nos na lista nodes
+        ultimo = float(nodes[-1]) #
+        nodes[-1] = int(ultimo)
     nodes = [int(x) for x in nodes] #transformacao dos elementos do vetor de string em vetor de inteiros
     return nodes #retornando um vetor de inteiros
 
