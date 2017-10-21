@@ -82,7 +82,7 @@ class Node:
                 self.direita = Node(chave)
             else:
                 self.direita.insere(chave)
-        self.executaBalanco() #Apos inserir executa o balanceamento da arvore
+        self.executaBalanco() #Apos inserir executa o balanceamento do no inserido
 
     def localizar(self, chave, pai="-"):
         if chave < self.chave: #se a chave procurada foi menor que a chave atual, vai pra esquerda, recursivamente, salvando a chave atual no caso de este ser o pai do procurado
@@ -112,28 +112,44 @@ class Node:
                 return self.esquerda
             if self.esquerda is None:
                 return self.direita
-            t = self.direita._min()
-            self.chave = t.chave
-            self.direita = self.direita._deleteMin()
+            aux = self.direita.menor()
+            self.chave = aux.chave
+            self.direita = self.direita.deletamenor()
         return self
 
-    def _min(self):
+    def menor(self):
         if self.esquerda is None:
             return self
         else:
-            return self.esquerda._min()
+            return self.esquerda.menor()
 
-    def _deleteMin(self):
-        if self.esquerda is None:  # encontrou o min, dai pode rearranjar
+    def deletamenor(self):
+        if self.esquerda is None:
             return self.direita
-        self.esquerda = self.esquerda._deleteMin()
+        self.esquerda = self.esquerda.deletamenor()
         return self
 
-    """
     def rebalanceamento(self):
-        #verifica a necessidade de um rebalanceamento. se sim, procura o no ideal para realizar o processo
+        bal = self.FB()
+        if bal > 1:
+            if self.direita.FB() > 0:
+                self.rot_E()
+                return
+            else:
+                self.rot_dup_E()
+                return
+        elif bal < -1:
+            if self.esquerda.FB() < 0:
+                self.rot_D()
+                return
+            else:
+                self.rot_dup_D()
+                return
+        if self.esquerda is not None:
+            self.esquerda.rebalanceamento()
+        if self.direita is not None:
+            self.direita.rebalanceamento()
 
-    """
 
     def imprimeArvore(self, indent = 0, count = 0, pai = 0):
         #Printa a arvore na ordem raiz -> filho dir - filho esq. Mostra o pai de cada no e seu respectivo fator de balanceamento
@@ -192,6 +208,7 @@ def main():
             arvore.localizar(input('Chave do no para localizar: '))
         elif resp is 5:
             arvore.remocao(input('Chave do no para remover: '))
+            arvore.rebalanceamento()
         elif resp is 0: #da ordem de saida do main e consequentemente do programa
             return 0
 
