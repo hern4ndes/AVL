@@ -87,7 +87,7 @@ class Node:
     def localizar(self, chave, pai="-"):
         if chave < self.chave: #se a chave procurada foi menor que a chave atual, vai pra esquerda, recursivamente, salvando a chave atual no caso de este ser o pai do procurado
             pai = str(self.chave) #guarda o pai pro caso de ser o proximo no o desejado
-            if self.direita is not None:
+            if self.esquerda is not None:
                 self.esquerda.localizar(chave, pai)
         elif chave > self.chave: #se a chave procurada foi maior que a chave atual, vai pra direita, recursivamente, salvando a chave atual no caso de este ser o pai do procurado
             pai = str(self.chave) #guarda o pai pro caso de ser o proximo no o desejado
@@ -101,6 +101,39 @@ class Node:
             if self.direita is not None:
                 filhodir = str(self.direita.chave)
             print '\nNo localizado:\n No: ' + str(self.chave) + '\n Pai: ' + str(pai) + '\n Filhos:\n  Esquerda: ' + filhoesq + '\n  Direita: ' + filhodir + '\n FB: ' + str(self.FB())
+
+    def remocao(self, chave):
+        if chave < self.chave:
+            self.esquerda = self.esquerda.remocao(chave)
+        elif chave > self.chave:
+            self.direita = self.direita.remocao(chave)
+        else:
+            if self.direita is None:
+                return self.esquerda
+            if self.esquerda is None:
+                return self.direita
+            t = self.direita._min()
+            self.chave = t.chave
+            self.direita = self.direita._deleteMin()
+        return self
+
+    def _min(self):
+        if self.esquerda is None:
+            return self
+        else:
+            return self.esquerda._min()
+
+    def _deleteMin(self):
+        if self.esquerda is None:  # encontrou o min, dai pode rearranjar
+            return self.direita
+        self.esquerda = self.esquerda._deleteMin()
+        return self
+
+    """
+    def rebalanceamento(self):
+        #verifica a necessidade de um rebalanceamento. se sim, procura o no ideal para realizar o processo
+
+    """
 
     def imprimeArvore(self, indent = 0, count = 0, pai = 0):
         #Printa a arvore na ordem raiz -> filho dir - filho esq. Mostra o pai de cada no e seu respectivo fator de balanceamento
@@ -126,9 +159,9 @@ def menu():
     #Exibe um menu simples para auxiliar o usuario
     validacao = True #true neste caso assume a invalidez da resposta
     while validacao:
-        print("\n1. INPUT.txt\n2. Inserir manualmente\n3. Exibir arvore (identacao)\n4. Localizar\n0. Sair\n")
+        print("\n1. INPUT.txt\n2. Inserir manualmente\n3. Exibir arvore (identacao)\n4. Localizar\n5. Remover no\n0. Sair\n")
         resp = input('Resposta: ')
-        if resp<0 or resp >4:
+        if resp<0 or resp >5:
             validacao = True
         else:
             validacao = False
@@ -148,15 +181,17 @@ def main():
                     arvore.insere(no)
         elif resp is 2: #insere manualmente pelo input do user
             if incl_raiz is False:
-                arvore = Node(input('Chave do no: '))
+                arvore = Node(input('Chave do no para inserir: '))
                 incl_raiz = True
             else:
-                arvore.insere(input('Chave do no: '))
+                arvore.insere(input('Chave do no para inserir: '))
         elif resp is 3: #chama a funcao imprimeArvore da classe Node para imprimir a arvore
             arvore.imprimeArvore()
             print ""
         elif resp is 4:
             arvore.localizar(input('Chave do no para localizar: '))
+        elif resp is 5:
+            arvore.remocao(input('Chave do no para remover: '))
         elif resp is 0: #da ordem de saida do main e consequentemente do programa
             return 0
 
