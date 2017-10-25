@@ -102,6 +102,31 @@ class Node:
                 filhodir = str(self.direita.chave)
             print '\nNo localizado:\n No: ' + str(self.chave) + '\n Pai: ' + str(pai) + '\n Filhos:\n  Esquerda: ' + filhoesq + '\n  Direita: ' + filhodir + '\n FB: ' + str(self.FB())
 
+    def remover(self, chave):
+        global incl_raiz
+        #avalia o caso especial de remocao e depois manda pra remocao
+        if chave == self.chave:
+            if self.esquerda is None and self.direita is not None:
+                print 'CASO NO NA DIREITA'
+                self.chave = self.direita.chave
+                self.filhos = self.direita.filhos
+                self.direita = self.direita.direita
+            elif self.direita is None and self.esquerda is not None:
+                print 'CASO NO NA ESQUERDA'
+                self.chave = self.esquerda.chave
+                self.filhos = self.esquerda.filhos
+                self.esquerda = self.esquerda.esquerda
+            elif self.direita is None and self.esquerda is None:
+                print 'CASO APENAS RAIZ'
+                self.__init__('Arvore vazia. Insira nos.')
+                incl_raiz = False
+            else:
+                print 'CASO RAIZ COM DOIS FILHOS (NAO E ESPECIAL)'
+                self.remocao(chave)
+        else:
+            print 'NEM UM POUCO ESPECIAL'
+            self.remocao(chave)
+
     def remocao(self, chave):
         if chave < self.chave:
             self.esquerda = self.esquerda.remocao(chave)
@@ -213,7 +238,7 @@ def main():
         elif resp is 4:
             arvore.localizar(input('Chave do no para localizar: '))
         elif resp is 5:
-            arvore.remocao(input('Chave do no para remover: '))
+            arvore.remover(input('Chave do no para remover: '))
             arvore.imprimeArvore()
             arvore.rebalanceamento()
         elif resp is 0: #da ordem de saida do main e consequentemente do programa
