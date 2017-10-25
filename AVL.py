@@ -130,23 +130,29 @@ class Node:
         return self
 
     def rebalanceamento(self):
-        bal = self.FB()
-        if bal > 1:
-            if self.direita.FB() > 0:
-                self.rot_E()
-                return
-            else:
-                self.rot_dup_E()
-                return
-        elif bal < -1:
-            if self.esquerda.FB() < 0:
-                self.rot_D()
-                return
-            else:
-                self.rot_dup_D()
-                return
         if self.esquerda is not None:
             self.esquerda.rebalanceamento()
+        bal = self.FB()
+        if bal > 1:
+            if self.direita.direita is not None:
+                print 'rot esq in ' + str(self.chave) + ' FB: ' + str(self.FB())
+                self.rot_E()
+                #return
+            else:
+                print 'rot dup esq in ' + str(self.chave) + ' FB: ' + str(self.FB())
+                self.rot_dup_E()
+                #return
+        elif bal < -1:
+            if self.esquerda.esquerda is not None:
+                print 'rot dir in ' + str(self.chave) + ' FB: ' + str(self.FB())
+                self.rot_D()
+                #return
+            else:
+                print 'rot dup dir in ' + str(self.chave) + ' FB: ' + str(self.FB())
+                self.rot_dup_D()
+                #return
+
+        print 'visitado:' + str(self.chave)
         if self.direita is not None:
             self.direita.rebalanceamento()
 
@@ -208,6 +214,7 @@ def main():
             arvore.localizar(input('Chave do no para localizar: '))
         elif resp is 5:
             arvore.remocao(input('Chave do no para remover: '))
+            arvore.imprimeArvore()
             arvore.rebalanceamento()
         elif resp is 0: #da ordem de saida do main e consequentemente do programa
             return 0
