@@ -169,30 +169,21 @@ class Node:
 
     def remocao(self, chave):
         #remocao de no folha ou no com apenas um filho, recursivamente. usa os retornos a cada recursao pra percorrer e substituir o no apagado
-        try:
-            if chave < self.chave:
-                self.esquerda = self.esquerda.remocao(chave)
-            elif chave > self.chave:
-                self.direita = self.direita.remocao(chave)
-            else:
-                if self.direita is None:
-                    return self.esquerda
-                if self.esquerda is None:
-                    return self.direita
-                #remocao de no com dois filhos. substitui o no removido pelo menor no da subarvore da direita. tem dois metodos auxiliarres
-                #o metodo menor busca o menor no da subarvore da direita. o metodo deletamenor deleta esse no, pois ele ja foi substiuir o no removido
-                aux = self.direita.menor()
-                self.chave = aux.chave
-                self.direita = self.direita.deletamenor()
-            return self
-
-        except(AttributeError):
-            #Se o no nao for encontrado,
-            erroRemocao = Tk()
-            erroRemocao.title('AVL') # seta o titulo da janela
-            erroRemocao.geometry('200x50') # seta o tamanho da janela
-            confirmacao = Label(erroRemocao, text="Nó não encontrado!")
-            confirmacao.pack()
+        if chave < self.chave:
+            self.esquerda = self.esquerda.remocao(chave)
+        elif chave > self.chave:
+            self.direita = self.direita.remocao(chave)
+        else:
+            if self.direita is None:
+                return self.esquerda
+            if self.esquerda is None:
+                return self.direita
+            #remocao de no com dois filhos. substitui o no removido pelo menor no da subarvore da direita. tem dois metodos auxiliarres
+            #o metodo menor busca o menor no da subarvore da direita. o metodo deletamenor deleta esse no, pois ele ja foi substiuir o no removido
+            aux = self.direita.menor()
+            self.chave = aux.chave
+            self.direita = self.direita.deletamenor()
+        return self
 
     def menor(self):
         #busca o menor no da subarvore direita do no removido
