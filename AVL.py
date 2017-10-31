@@ -1,12 +1,37 @@
-#!/usr/bin/python
 # -*- coding: utf8 -*-
+
+from Tkinter import *
+import pygame
+#import AVL
+
+XDMI = 1000
+YDMI = 720
+
+White = (255, 255, 255)
+Black = 0, 0, 0
+Red = 255, 0, 0
+Blue = 0, 0, 255
+Green = 0, 0, 255
+Cyan = 0,180,105
+
+nodes = []
+localizado = " "
+
+window = Tk() # cria uma janela
+window.title('AVL') # seta o titulo da janela
+window.geometry('450x300') # seta o tamanho da janela
+
+entry = Entry(window, width=25, justify='center') # cria uma entrada de texto
+entry.insert(0, '') # seta o texto
+entry.pack() # gerenciador de geometria
+entry.focus_set() # obtm o foco para a entrada de texto
 
 class Node:
     def __init__(self, chave):
         #Inicia a arvore colocando uma raiz ou apenas coloca um no
         self.chave = chave
         self.filhos(None, None)
-        self.posicao = (None,None)
+        self.posicao = (None, None)
         self.nivel = None
 
     def filhos(self, esquerda, direita):
@@ -90,6 +115,7 @@ class Node:
         self.executaBalanco() #Apos inserir executa o balanceamento do no inserido
 
     def localizar(self, chave, pai="-"):
+        global localizado
         if chave < self.chave: #se a chave procurada foi menor que a chave atual, vai pra esquerda, recursivamente, salvando a chave atual no caso de este ser o pai do procurado
             pai = str(self.chave) #guarda o pai pro caso de ser o proximo no o desejado
             if self.esquerda is not None:
@@ -105,7 +131,9 @@ class Node:
                 filhoesq = str(self.esquerda.chave)
             if self.direita is not None:
                 filhodir = str(self.direita.chave)
-            print '\nNo localizado:\n No: ' + str(self.chave) + '\n Pai: ' + str(pai) + '\n Filhos:\n  Esquerda: ' + filhoesq + '\n  Direita: ' + filhodir + '\n FB: ' + str(self.FB())
+            localizado = ('Nó: ' + str(self.chave) + '\nPai: ' + str(pai) + '\nFilho da Esquerda: ' + str(filhoesq) + '\nFilho da Direita: ' + str(filhodir) + '\nFB: ' + str(self.FB()))
+            #print localizado
+            #print '\nNo localizado:\n No: ' + str(self.chave) + '\n Pai: ' + str(pai) + '\n Filhos:\n  Esquerda: ' + filhoesq + '\n  Direita: ' + filhodir + '\n FB: ' + str(self.FB())
 
     def remover(self, chave):
         global incl_raiz
@@ -171,7 +199,7 @@ class Node:
         #de rebalanceamento ao inserir um no
         if self.esquerda is not None:
             self.esquerda.rebalanceamento()
-            
+
         bal = self.FB()#bal recebe o FB do no acessado atualmente
         if bal > 1:
             #FBs>1 fazem rotacoes a esquerda
@@ -193,25 +221,27 @@ class Node:
                 #caso nao, sera dupla a direita
                 print '\nRebalanceamento: Rotacao dupla a direita em \n' + str(self.chave) + ' que tinha o FB ' + str(self.FB())
                 self.rot_dup_D()
-                
+
         if self.direita is not None:
             self.direita.rebalanceamento()
 
-    def imprimeArvore(self, indent = 0, count = 0, pai = 0):
+    def imprimeArvore(self, indent = 0, count = 0, pai = 0, arvore = []):
         #Printa a arvore na ordem raiz -> filho dir - filho esq. Mostra o pai de cada no e seu respectivo fator de balanceamento
         count = count + 1
         if count is 1:
             #A identacao se da por uma multiplicacao de uma string com um espaco simples por uma variavel com um valor, recebida de uma execucao anterior
-            print " "
-            print " " * indent + str(self.chave) +'  (raiz FB: ' + str(self.FB()) + ')'
+            arvore.append("  ")
+            arvore.append("  " * indent + str(self.chave) +'  (raiz FB: ' + str(self.FB()) + ')')
         else:
-            print " " * indent + str(self.chave) +'  (pai: ' + str(pai) + ' FB: '+ str(self.FB()) + ')'
+            arvore.append("     " * indent + str(self.chave) +'  (pai: ' + str(pai) + ' FB: '+ str(self.FB()) + ')')
             pai = 0
         #navega recursivamente na arvore levando como paramentros instrucoes para a printagem
         if self.esquerda:
-            self.esquerda.imprimeArvore(indent + 2, count + 2, pai + self.chave)
+            self.esquerda.imprimeArvore(indent + 2, count + 2, pai + self.chave, arvore = arvore)
         if self.direita:
-            self.direita.imprimeArvore(indent + 2, count + 2, pai + self.chave)
+            self.direita.imprimeArvore(indent + 2, count + 2, pai + self.chave, arvore = arvore)
+
+        return arvore
 
     def calculaNiveis(self, rootOk = 0, nivelRoot = 0):
         #calcula os niveis dos nos pra ajudar no calculo da posicao
@@ -229,43 +259,147 @@ class Node:
             self.direita.calculaNiveis(rootOk + 2, nivelRoot = nivelRoot)
 
     def calcposicao(self,  rootOk = 0, posPai = [0,0], lado = 0):
-        nodes = []
-        #Calcula as posicoes para orientar o desenho na interface grafica
-        #coloca em cada no sua posicao (ou posicao aproximada) a ser desenhada na interface grafica da arvore, dependendo de seu parentesco entre outros
         rootOk = rootOk + 1
         node = ()
         if rootOk == 1:
-            #da uma posicao centralizada para a raiz
-            self.posicao = (1000,  100)
+            self.posicao = (XDMI,  100)
             node = (self.chave,self.posicao)
             nodes.append(node)
         else:
-            #calculo para o restante dos nos
             if lado == 1:
-                #lado 1 = esquerda
                 aux = 2 ** self.nivel
                 aux = aux/2
-                deslocamento = 1000/aux
-                #calcula um deslocamento adequado para o nivel de cada no
+                deslocamento = XDMI/aux
                 self.posicao = [posPai[0] - deslocamento, posPai[1]+100]
+                print self.posicao
                 node = (self.chave,self.posicao,posPai)
                 nodes.append(node)
-                #coloca informacoes no vetor nodes para poder levar para a funcao que desenha na tela a arvore
             else:
-                #lado 2 = direita
                 aux = 2 ** self.nivel
                 aux = aux/2
-                deslocamento = 1000/aux
-                #calcula um deslocamento adequado para o nivel de cada no
+                deslocamento = XDMI/aux
                 self.posicao = [posPai[0] + deslocamento, posPai[1]+100 ]
                 node = (self.chave,self.posicao,posPai)
                 nodes.append(node)
-                #coloca informacoes no vetor nodes para poder levar para a funcao que desenha na tela a arvore
 
         if self.esquerda:
             self.esquerda.calcposicao(rootOk + 2, posPai = [self.posicao[0], self.posicao[1]], lado = 1)
         if self.direita:
             self.direita.calcposicao (rootOk + 2, posPai = [self.posicao[0], self.posicao[1]], lado = 2)
-
-        return nodes
         #retorna o vetor de nos.
+
+RAIZ = False
+arvore = Node("Vazio")
+
+
+def read():
+    #Le os elementos do arquivo e os coloca em um vetor de inteiros
+    arquivo = open("INPUT.TXT","r") #abre arquivo com nos
+    nodes = arquivo.read().split(';') #vetor nodes recebe os elementos no formato string
+    ultimo = float(nodes[-1])
+    nodes[-1] = int(ultimo)
+    nodes = [int(x) for x in nodes] #transformacao dos elementos do vetor de string em vetor de inteiros
+    return nodes #retornando um vetor de inteiros
+
+#funcao para o evento de clique do botao
+def arq_button():
+    global arvore
+    global RAIZ
+    nos = read()
+    print nos
+    for no in nos:
+        if RAIZ is False:
+            arvore = Node(no)
+            RAIZ = True
+        else:
+            arvore.insere(no)
+    arvore.imprimeArvore()
+
+def manual_button():
+    global arvore
+    global RAIZ
+    if not entry.get(): #[] entrada vazia
+        entry.insert(0, 'Digite o Nó')
+    else:
+        if RAIZ is False:
+            global arvore
+            arvore = Node(int(entry.get()))
+        else:
+            arvore.insere(int(entry.get()))
+        RAIZ = True
+    arvore.imprimeArvore()
+
+def remover_button():
+    global arvore
+    if not entry.get(): #[] entrada vazia
+        entry.insert(0, 'Digite o Nó')
+    else:
+        arvore.remover(int(entry.get()))
+        arvore.rebalanceamento()
+        removerOk = Tk()
+        removerOk.title("Remoção")
+        removerOk.geometry('200x50')
+        confirmacao = Label(removerOk, text="Remoção Ok.")
+        confirmacao.pack()
+
+def localizar_button():
+    global localizado
+    if not entry.get(): #[] entrada vazia
+        entry.insert(0, 'Digite o Nó')
+    else:
+        arvore.localizar(int(entry.get()))
+        localizar = Tk()
+        localizar.title("Localizar")
+        localizar.geometry('500x200')
+        resultado = Label(localizar, text=localizado);
+        resultado.pack()
+
+def identacao_button():
+    windows = Tk() # cria uma janela
+    windows.title('Notação Indentada') # seta o titulo da janela
+    windows.geometry('450x800')
+    for i in arvore.imprimeArvore():
+        resultado = Label(windows, text=i,justify=RIGHT,anchor=W);
+        resultado.pack(fill=X)
+
+def natural_button():
+    print nodes
+    del nodes[:]
+    print nodes
+    WindowSize = [XDMI, YDMI]
+    arvore.calculaNiveis()
+    arvore.calcposicao()
+    pygame.init()
+    screen = pygame.display.set_mode(WindowSize)
+    font = pygame.font.SysFont("Arial", 13)
+    screen.fill(White)
+    for i in range(len(nodes)):
+        pygame.draw.circle(screen,Blue , (nodes[i][1][0]/2,nodes[i][1][1]),20, 2)
+        text = font.render(str(nodes[i][0]), True, Black)
+        screen.blit(text,(nodes[i][1][0]/2-10,nodes[i][1][1]-10))
+        for i in range(1,len(nodes)):
+            pygame.draw.aaline(screen, Cyan, (nodes[i][2][0]/2,nodes[i][2][1]+20),(nodes[i][1][0]/2,nodes[i][1][1]-20), 3)
+    fpsClock = pygame.time.Clock()
+    pygame.display.update()
+    while 1:
+        ev = pygame.event.poll()
+        if ev.type == pygame.QUIT:
+            break
+    pygame.quit()
+
+
+btn_arq = Button(window, text='Inserir do Arquivo', width=20, command = arq_button)
+btn_manual = Button(window, text='Inserir Nó Manualmente', width=20, command = manual_button)
+btn_remover = Button(window, text='Remover Nó', width=20, command = remover_button)
+btn_identacao = Button(window, text='Notação Indentada', width=20, command = identacao_button)
+btn_localizar = Button(window, text ='Localizar Nó', width=20, command = localizar_button)
+btn_natural = Button(window, text='Notação Natural', width=20, command = natural_button)
+
+btn_arq.pack()
+btn_manual.pack()
+btn_remover.pack()
+btn_localizar.pack()
+btn_identacao.pack()
+btn_natural.pack()
+
+window.mainloop()
