@@ -1,8 +1,13 @@
+#!/usr/bin/python
+# -*- coding: utf8 -*-
+
 class Node:
     def __init__(self, chave):
         #Inicia a arvore colocando uma raiz ou apenas coloca um no
         self.chave = chave
         self.filhos(None, None)
+        self.posicao = (None,None)
+        self.nivel = None
 
     def filhos(self, esquerda, direita):
         #Configura os filhos de um no
@@ -107,24 +112,19 @@ class Node:
         #avalia o caso especial de remocao e depois manda pra remocao
         if chave == self.chave:
             if self.esquerda is None and self.direita is not None:
-                print 'CASO NO NA DIREITA'
                 self.chave = self.direita.chave
                 self.filhos = self.direita.filhos
                 self.direita = self.direita.direita
             elif self.direita is None and self.esquerda is not None:
-                print 'CASO NO NA ESQUERDA'
                 self.chave = self.esquerda.chave
                 self.filhos = self.esquerda.filhos
                 self.esquerda = self.esquerda.esquerda
             elif self.direita is None and self.esquerda is None:
-                print 'CASO APENAS RAIZ'
                 self.__init__('Arvore vazia. Insira nos.')
                 incl_raiz = False
             else:
-                print 'CASO RAIZ COM DOIS FILHOS (NAO E ESPECIAL)'
                 self.remocao(chave)
         else:
-            print 'NEM UM POUCO ESPECIAL'
             self.remocao(chave)
 
     def remocao(self, chave):
@@ -160,27 +160,20 @@ class Node:
         bal = self.FB()
         if bal > 1:
             if self.direita.direita is not None:
-                print 'rot esq in ' + str(self.chave) + ' FB: ' + str(self.FB())
+                print 'Rebalanceamento: Rotacao a esquerda em ' + str(self.chave) + ' que tinha o FB ' + str(self.FB())
                 self.rot_E()
-                #return
             else:
-                print 'rot dup esq in ' + str(self.chave) + ' FB: ' + str(self.FB())
+                print 'Rebalanceamento: Rotacao dupla a esquerda em ' + str(self.chave) + ' que tinha o FB ' + str(self.FB())
                 self.rot_dup_E()
-                #return
         elif bal < -1:
             if self.esquerda.esquerda is not None:
-                print 'rot dir in ' + str(self.chave) + ' FB: ' + str(self.FB())
+                print 'Rebalanceamento: Rotacao a direita em ' + str(self.chave) + ' que tinha o FB ' + str(self.FB())
                 self.rot_D()
-                #return
             else:
-                print 'rot dup dir in ' + str(self.chave) + ' FB: ' + str(self.FB())
+                print '\nRebalanceamento: Rotacao dupla a direita em \n' + str(self.chave) + ' que tinha o FB ' + str(self.FB())
                 self.rot_dup_D()
-                #return
-
-        print 'visitado:' + str(self.chave)
         if self.direita is not None:
             self.direita.rebalanceamento()
-
 
     def imprimeArvore(self, indent = 0, count = 0, pai = 0):
         #Printa a arvore na ordem raiz -> filho dir - filho esq. Mostra o pai de cada no e seu respectivo fator de balanceamento
@@ -188,9 +181,9 @@ class Node:
         if count is 1:
             #A identacao se da por uma multiplicacao de uma string com um espaco simples por uma variavel com um valor, recebida de uma execucao anterior
             print " "
-            print " " * indent + str(self.chave) + '  (raiz FB: ' + str(self.FB()) + ')'
+            print " " * indent + str(self.chave) +'  (raiz FB: ' + str(self.FB()) + ')'
         else:
-            print " " * indent + str(self.chave) + '  (pai: ' + str(pai) + ' FB: '+ str(self.FB()) + ')'
+            print " " * indent + str(self.chave) +'  (pai: ' + str(pai) + ' FB: '+ str(self.FB()) + ')'
             pai = 0
 
         #navega recursivamente na arvore levando como paramentros instrucoes para a printagem
@@ -199,59 +192,48 @@ class Node:
         if self.direita:
             self.direita.imprimeArvore(indent + 2, count + 2, pai + self.chave)
 
-
-incl_raiz = False #Var. global que informa se ha uma raiz inserida, ou seja, se o __init_ da classe ja foi realizado
-
-def menu():
-    #Exibe um menu simples para auxiliar o usuario
-    validacao = True #true neste caso assume a invalidez da resposta
-    while validacao:
-        print("\n1. INPUT.txt\n2. Inserir manualmente\n3. Exibir arvore (identacao)\n4. Localizar\n5. Remover no\n0. Sair\n")
-        resp = input('Resposta: ')
-        if resp<0 or resp >5:
-            validacao = True
+    def calculaNiveis(self, rootOk = 0, nivelRoot = 0):
+        #calcula os niveis dos nos pra ajudar no calculo da posicao
+        rootOk = rootOk + 1
+        if rootOk == 1:
+            nivelRoot = self.altura()
         else:
-            validacao = False
-    return resp
+            self.nivel = nivelRoot - self.altura() + 1
+        if self.esquerda:
+            self.esquerda.calculaNiveis(rootOk + 2, nivelRoot = nivelRoot)
+        if self.direita:
+            self.direita.calculaNiveis(rootOk + 2, nivelRoot = nivelRoot)
 
-def main():
-    global incl_raiz #inclui a variavel global que conta se ha raiz inserida
-    while True: #Roda o main ate que receba a ordem para sair
-        resp = menu()
-        if resp is 1: #le o INPUT.txt para inserir nos
-            nos = read()
-            for no in nos:
-                if incl_raiz is False:
-                    arvore = Node(no)
-                    incl_raiz = True
-                else:
-                    arvore.insere(no)
-        elif resp is 2: #insere manualmente pelo input do user
-            if incl_raiz is False:
-                arvore = Node(input('Chave do no para inserir: '))
-                incl_raiz = True
+    def calcposicao(self,  rootOk = 0, posPai = [0,0], lado = 0):
+        nodes = []
+        #Calcula as posicoes para orientar o desenho na interface grafica
+        rootOk = rootOk + 1
+        node = ()
+        if rootOk == 1:
+            self.posicao = (1000,  100)
+            node = (self.chave,self.posicao)
+            nodes.append(node)
+        else:
+            if lado == 1:
+                aux = 2 ** self.nivel
+                aux = aux/2
+                deslocamento = 1000/aux
+                self.posicao = [posPai[0] - deslocamento, posPai[1]+100]
+                print self.posicao
+                node = (self.chave,self.posicao,posPai)
+                nodes.append(node)
             else:
-                arvore.insere(input('Chave do no para inserir: '))
-        elif resp is 3: #chama a funcao imprimeArvore da classe Node para imprimir a arvore
-            arvore.imprimeArvore()
-            print ""
-        elif resp is 4:
-            arvore.localizar(input('Chave do no para localizar: '))
-        elif resp is 5:
-            arvore.remover(input('Chave do no para remover: '))
-            arvore.imprimeArvore()
-            arvore.rebalanceamento()
-        elif resp is 0: #da ordem de saida do main e consequentemente do programa
-            return 0
+                aux = 2 ** self.nivel
+                aux = aux/2
+                deslocamento = 1000/aux
+                self.posicao = [posPai[0] + deslocamento, posPai[1]+100 ]
+                node = (self.chave,self.posicao,posPai)
+                nodes.append(node)
 
-def read():
-    #Le os elementos do arquivo e os coloca em um vetor de inteiros
-    arquivo = open("INPUT.TXT","r") #abre arquivo com nos
-    nodes = arquivo.read().split(';') #vetor nodes recebe os elementos no formato string
-    ultimo = float(nodes[-1])
-    nodes[-1] = int(ultimo)
-    nodes = [int(x) for x in nodes] #transformacao dos elementos do vetor de string em vetor de inteiros
-    return nodes #retornando um vetor de inteiros
+        if self.esquerda:
+            self.esquerda.calcposicao(rootOk + 2, posPai = [self.posicao[0], self.posicao[1]], lado = 1)
+        if self.direita:
+            self.direita.calcposicao (rootOk + 2, posPai = [self.posicao[0], self.posicao[1]], lado = 2)
 
-if __name__ == '__main__':
-    main()
+        return nodes
+
