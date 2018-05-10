@@ -22,16 +22,14 @@ removerOk = 0
 
 window = Tk() # cria uma janela
 window.title('AVL') # seta o titulo da janela
-window.geometry('450x300') # seta o tamanho da janela
-entry = Entry(window, width=25, justify='center') # cria uma entrada de texto
-entry.insert(0, '') # seta o texto
-entry.pack() # gerenciador de geometria
-entry.focus_set() # obtm o foco para a entrada de texto
+window.geometry('300x200') # seta o tamanho da janela
+
 
 class Node:
-    def __init__(self, chave):
+    def __init__(self, chave,palavras):
         #Inicia a arvore colocando uma raiz ou apenas coloca um no
         self.chave = chave
+        self.palavras = palavras
         self.filhos(None, None)
         self.posicao = (None, None)
         self.nivel = None
@@ -102,18 +100,18 @@ class Node:
             else: #caso contrario, sera dupla
                 self.rot_dup_D()
 
-    def insere(self, chave):
+    def insere(self, chave, palavras):
         #Realiza a insercao de um no com chave. Usa o __init__ e a a propria funcao recursivamente
         if chave < self.chave: #Se a chave a ser inserida for menor que a chave atual, continua o algoritmo a esquerda ou insere a esquerda
             if not self.esquerda:
-                self.esquerda = Node(chave)
+                self.esquerda = Node(chave, palavras)
             else:
-                self.esquerda.insere(chave)
+                self.esquerda.insere(chave, palavras)
         elif chave > self.chave: #Se a chave inserida for maior ou igual que a chave atual, continua o algoritmo a direita ou insere a direita
             if not self.direita:
-                self.direita = Node(chave)
+                self.direita = Node(chave, palavras)
             else:
-                self.direita.insere(chave)
+                self.direita.insere(chave, palavras)
         self.executaBalanco() #Apos inserir executa o balanceamento do no inserido
 
     def localizar(self, chave, pai="-"):
@@ -157,7 +155,7 @@ class Node:
                 self.esquerda = self.esquerda.esquerda
             elif self.direita is None and self.esquerda is None:
                 #se tiver restando apenas a raiz, ele troca a raiz por uma mensagem de arvore vazia
-                self.__init__('Vazio')
+                self.__init__('Vazio','')
                 RAIZ = False
             else:
                 #se nao for nenhum dos casos acima, faz a remocao com os outros casos no outro metodo
@@ -236,8 +234,13 @@ class Node:
             #A identacao se da por uma multiplicacao de uma string com um espaco simples por uma variavel com um valor, recebida de uma execucao anterior
             print " "
             print " " * indent + str(self.chave) + '  (raiz FB: ' + str(self.FB()) + ')'
+            print " " * indent,
+            print  self.palavras
+
         else:
             print " " * indent + str(self.chave) + '  (pai: ' + str(pai) + ' FB: '+ str(self.FB()) + ')'
+            print " " * indent,
+            print self.palavras
             pai = 0
 
         #navega recursivamente na arvore levando como paramentros instrucoes para a printagem
@@ -295,7 +298,7 @@ class Node:
         #retorna o vetor de nos.
 
 
-arvore = Node("Vazio")
+arvore = Node("Vazio"," ")
 
 def read():
     #Le os elementos do arquivo e os coloca em um vetor de inteiros
@@ -319,22 +322,74 @@ def arq_button():
             arvore.insere(no)
 
 def manual_button():
+    global EntryID
+    global EntryName
+    ManualInsert = Tk() # cria uma janela
+    ManualInsert.title('AVL') # seta o titulo da janela
+    ManualInsert.geometry('300x200') # seta o tamanho da janela
+    EntryID = Entry(ManualInsert, width=25, justify='center') # cria uma entrada de texto
+    EntryName = Entry(ManualInsert, width=25, justify='center') # cria uma entrada de texto
+    EntryID.insert(0, '') # seta o texto
+    EntryName.insert(0, '') # seta o texto
+    EntryID.pack() # gerenciador de geometria
+    EntryName.pack()
+    EntryID.focus_set() # obtm o foco para a entrada de texto
+    EntryName.focus_set()
+    inserit_btn = Button(ManualInsert, text='Inserir', width=20, command = inserit_btn_func)
+    inserit_btn.pack()
+
+def inserit_btn_func():
+       
+    notification = Tk()
+    notification.title("Remoção Status")
+    notification.geometry('150x50')
+    
     global arvore
     global RAIZ
-    if not entry.get(): #[] entrada vazia
-        entry.insert(0, 'Digite o Nó')
+    Words = []
+    try:
+        Words = EntryName.get().split(" ")
+    except:
+        pass
+        
+    if not EntryID.get(): #[] entrada vazia
+        label = Label(notification, text="Digite a ID do Nó a ser  inserido" , height=0, width=100,justify=CENTER)
+
     else:
         if RAIZ is False:
             global arvore
-            arvore = Node(int(entry.get()))
+            arvore = Node(int(EntryID.get()),Words)
+
         else:
-            arvore.insere(int(entry.get()))
+            arvore.insere(int(EntryID.get()),Words)
+
+        label = Label(notification, text="Nó "+EntryID.get()+" inserido" , height=0, width=100)
         RAIZ = True
 
+        
+    b = Button(notification, text="ok", width=20, command=notification.destroy)
+    label.pack()
+    b.pack(side='bottom',padx=0,pady=0)
+    
 def remover_button():
+    RemoverWindon = Tk() # cria uma janela
+    RemoverWindon.title('Remover Nó') # seta o titulo da janela
+    RemoverWindon.geometry('300x200') # seta o tamanho da janela
+    global entry
+    entry = Entry(RemoverWindon, width=25, justify='center') # cria uma entrada de texto
+    entry.insert(0, '') # seta o texto
+    inserit_btn = Button(RemoverWindon, text='Remover', width=20, command = remove )
+    entry.pack() # gerenciador de geometria
+    inserit_btn.pack()
+    """ notification = Tk()
+    notification.title("Nó Removido")
+    notification.geometry("300x50")"""
+def remove():
+    
     global arvore
     if not entry.get(): #[] entrada vazia
         entry.insert(0, 'Digite o Nó')
+            
     else:
         remover = int(entry.get())
         arvore.localizar(remover)
@@ -366,7 +421,14 @@ def localizar_button():
         resultado.pack()
 
 def identacao_button():
+    notification = Tk()
+    notification.title("Nó iserido")
+    notification.geometry("300x50")
     arvore.imprimeArvore()
+    label = Label(notification, text="Verificar o console" , height=0, width=100)
+    b = Button(notification, text="ok", width=20, command=notification.destroy)
+    label.pack()
+    b.pack(side='bottom',padx=0,pady=0)
 
 def natural_button():
     del nodes[:]
