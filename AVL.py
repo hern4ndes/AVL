@@ -155,7 +155,7 @@ class Node:
                 self.esquerda = self.esquerda.esquerda
             elif self.direita is None and self.esquerda is None:
                 #se tiver restando apenas a raiz, ele troca a raiz por uma mensagem de arvore vazia
-                self.__init__('Vazio','')
+                self.__init__('Vazio')
                 RAIZ = False
             else:
                 #se nao for nenhum dos casos acima, faz a remocao com os outros casos no outro metodo
@@ -301,25 +301,43 @@ class Node:
 arvore = Node("Vazio"," ")
 
 def read():
-    #Le os elementos do arquivo e os coloca em um vetor de inteiros
+
+    nodes  = []
+
     arquivo = open("INPUT.TXT","r") #abre arquivo com nos
-    nodes = arquivo.read().split(';') #vetor nodes recebe os elementos no formato string
-    ultimo = float(nodes[-1])
-    nodes[-1] = int(ultimo)
-    nodes = [int(x) for x in nodes] #transformacao dos elementos do vetor de string em vetor de inteiros
-    return nodes #retornando um vetor de inteiros
+    TepNodes = arquivo.read() #vetor nodes recebe os elementos no formato string
+    TepNodes = TepNodes.strip ('Dict_AVL = ').strip('{').strip('}').split('], ')
+
+    for i in range(len(TepNodes)):#i =  numero de linhas
+        TepNodes[i] =TepNodes[i].strip(']').split(':[' )
+
+        for j in range(len(TepNodes[i])):#numero de listas por linha
+            node = []
+            TepNodes[i][j] =TepNodes[i][j].strip(',').split(',')
+
+        node.append(int(TepNodes[i][0][0][1:(len(TepNodes))]))
+            
+        for k in range (len(TepNodes[i][1])):#numero de palavras na segunda lista
+            TepNodes[i][1][k] = TepNodes[i][1][k].strip(' ')  
+            node.append(str((TepNodes[i][1][k][1:(len(TepNodes[i][1][k])-1)])))     
+
+        nodes.append(node)    
+            
+    return nodes
 
 #funcao para o evento de clique do botao
 def arq_button():
     global arvore
     global RAIZ
     nos = read()
-    for no in nos:
+  
+    for i  in range(len(nos)):
         if RAIZ is False:
-            arvore = Node(no)
+            arvore = Node(nos[i][0],nos[i][1:len(nos[i])])
             RAIZ = True
+            
         else:
-            arvore.insere(no)
+            arvore.insere(nos[i][0],nos[i][1:len(nos[i])])
 
 def manual_button():
     global EntryID
@@ -335,15 +353,13 @@ def manual_button():
     EntryName.pack()
     EntryID.focus_set() # obtm o foco para a entrada de texto
     EntryName.focus_set()
-    inserit_btn = Button(ManualInsert, text='Inserir', width=20, command = inserit_btn_func)
+    inserit_btn = Button(ManualInsert, text='Inserir do Arquivo', width=20, command = inserit_btn_func)
     inserit_btn.pack()
 
 def inserit_btn_func():
-       
     notification = Tk()
-    notification.title("Remoção Status")
-    notification.geometry('150x50')
-    
+    notification.title("Nó iserido")
+    notification.geometry("300x50")
     global arvore
     global RAIZ
     Words = []
@@ -352,19 +368,20 @@ def inserit_btn_func():
     except:
         pass
         
+   
     if not EntryID.get(): #[] entrada vazia
-        label = Label(notification, text="Digite a ID do Nó a ser  inserido" , height=0, width=100,justify=CENTER)
-
+        
+        label = Label(notification, text="Digite a ID do Nó a ser  inserido" , height=0, width=100)
     else:
         if RAIZ is False:
             global arvore
             arvore = Node(int(EntryID.get()),Words)
-
         else:
             arvore.insere(int(EntryID.get()),Words)
-
         label = Label(notification, text="Nó "+EntryID.get()+" inserido" , height=0, width=100)
+        
         RAIZ = True
+
 
         
     b = Button(notification, text="ok", width=20, command=notification.destroy)
@@ -372,24 +389,14 @@ def inserit_btn_func():
     b.pack(side='bottom',padx=0,pady=0)
     
 def remover_button():
-    RemoverWindon = Tk() # cria uma janela
-    RemoverWindon.title('Remover Nó') # seta o titulo da janela
-    RemoverWindon.geometry('300x200') # seta o tamanho da janela
-    global entry
-    entry = Entry(RemoverWindon, width=25, justify='center') # cria uma entrada de texto
-    entry.insert(0, '') # seta o texto
-    inserit_btn = Button(RemoverWindon, text='Remover', width=20, command = remove )
-    entry.pack() # gerenciador de geometria
-    inserit_btn.pack()
-    """ notification = Tk()
-    notification.title("Nó Removido")
-    notification.geometry("300x50")"""
-def remove():
     
+    entry = Entry(window, width=25, justify='center') # cria uma entrada de texto
+    entry.insert(0, '') # seta o texto
+    entry.pack() # gerenciador de geometria
+    entry.focus_set() # obtm o foco para a entrada de texto
     global arvore
-    if not entry.get(): #[] entrada vazia
+    if not Entry.get(): #[] entrada vazia
         entry.insert(0, 'Digite o Nó')
-            
     else:
         remover = int(entry.get())
         arvore.localizar(remover)
